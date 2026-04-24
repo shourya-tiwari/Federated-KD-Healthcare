@@ -89,6 +89,45 @@ def partition_into_hospitals(data_dir, seed=42):
     
     return hospitals
 
+def get_reference_dataset(data_dir, num_images=200, seed=42):
+    """
+    Returns a small shared reference dataset used for knowledge sharing.
+    These are images (no labels needed) that expert hospitals run inference
+    on to generate soft predictions for non-expert hospitals.
+    
+    Uses images NOT assigned to any hospital partition.
+    """
+    random.seed(seed)
+    
+    class_images = get_all_images(data_dir)
+    normal_imgs    = class_images['NORMAL']
+    pneumonia_imgs = class_images['PNEUMONIA']
+    
+    # Hospital partition uses up to index:
+    # Normal:    400+350+100+180+60 = 1090
+    # Pneumonia: 700+600+300+80+120 = 1800
+    # So we take from the remaining images
+    
+    remaining_normal    = normal_imgs[1090:]   # 1349-1090 = 259 remaining
+    remaining_pneumonia = pneumonia_imgs[1800:] # 3883-1800 = 2083 remaining
+    
+    # Take 100 from each class for balance
+    ref_normal    = remaining_normal[:100]
+    ref_pneumonia = remaining_pneumonia[:100]
+    
+    ref_images = ref_normal + ref_pneumonia
+    ref_labels = [0]*100 + [1]*100
+    
+    # Shuffle
+    combined = list(zip(ref_images, ref_labels))
+    random.shuffle(combined)
+    ref_images, ref_labels = zip(*combined)
+    
+    return {
+        'images': list(ref_images),
+        'labels': list(ref_labels),
+        'total' : len(ref_images)
+    }
 
 if __name__ == "__main__":
     # Quick test - update this path to your actual data path

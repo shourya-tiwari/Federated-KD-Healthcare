@@ -36,24 +36,26 @@ class StudentModel(nn.Module):
             nn.Conv2d(64, 128, kernel_size=3, padding=1),
             nn.BatchNorm2d(128),
             nn.ReLU(inplace=True),
-            nn.MaxPool2d(2, 2)          # 56 → 28
+            nn.MaxPool2d(2, 2)
         )
 
-        # Global Average Pooling → reduces 28x28 to 1x1 per channel
-        self.gap = nn.AdaptiveAvgPool2d(1)
+        # Block 4: 128 → 256 channels (new)
+        self.block4 = nn.Sequential(
+            nn.Conv2d(128, 256, kernel_size=3, padding=1),
+            nn.BatchNorm2d(256),
+            nn.ReLU(inplace=True),
+            nn.AdaptiveAvgPool2d(1)
+        )
 
-        # Dropout for regularization (helps small hospitals avoid overfitting)
-        self.dropout = nn.Dropout(0.3)
-
-        # Final classification layer
-        self.fc = nn.Linear(128, num_classes)
+        self.dropout = nn.Dropout(0.4)
+        self.fc      = nn.Linear(256, num_classes)
 
     def forward(self, x):
         x = self.block1(x)
         x = self.block2(x)
         x = self.block3(x)
-        x = self.gap(x)
-        x = x.view(x.size(0), -1)  # flatten: (batch, 128, 1, 1) → (batch, 128)
+        x = self.block4(x)
+        x = x.view(x.size(0), -1)
         x = self.dropout(x)
         x = self.fc(x)
         return x

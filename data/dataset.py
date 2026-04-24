@@ -40,7 +40,7 @@ class HospitalDataset(Dataset):
         return image, label
 
 
-def get_default_transform(image_size=224):
+def get_default_transform(image_size=64):
     """
     Standard transform pipeline for chest X-ray images.
     - Resize to 224x224 (standard for ResNet/EfficientNet)
@@ -57,7 +57,7 @@ def get_default_transform(image_size=224):
     ])
 
 
-def get_augmented_transform(image_size=224):
+def get_augmented_transform(image_size=64):
     """
     Augmented transform for training — adds random flips and slight rotation.
     Helps smaller hospitals generalize better with limited data.
